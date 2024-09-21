@@ -3,21 +3,18 @@ package com.xuyuan.mianshiyuan.model.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
 
 /**
- * 帖子
- *
- * @author <a href="https://github.com/xuyuan-upward">许苑向上</a>
+ * 题库题目
+ * @TableName question_bank_question
  */
-@TableName(value = "post")
+@TableName(value ="question_bank_question")
 @Data
-public class Post implements Serializable {
-
+public class QuestionBankQuestion implements Serializable {
     /**
      * id
      */
@@ -25,29 +22,14 @@ public class Post implements Serializable {
     private Long id;
 
     /**
-     * 标题
+     * 题库 id
      */
-    private String title;
+    private Long questionBankId;
 
     /**
-     * 内容
+     * 题目 id
      */
-    private String content;
-
-    /**
-     * 标签列表 json
-     */
-    private String tags;
-
-    /**
-     * 点赞数
-     */
-    private Integer thumbNum;
-
-    /**
-     * 收藏数
-     */
-    private Integer favourNum;
+    private Long questionId;
 
     /**
      * 创建用户 id
@@ -63,12 +45,6 @@ public class Post implements Serializable {
      * 更新时间
      */
     private Date updateTime;
-
-    /**
-     * 是否删除
-     */
-    @TableLogic
-    private Integer isDelete;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

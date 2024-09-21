@@ -3,25 +3,22 @@ package com.xuyuan.mianshiyuan.model.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
 
 /**
- * 帖子
- *
- * @author <a href="https://github.com/xuyuan-upward">许苑向上</a>
+ * 题库
+ * @TableName question_bank
  */
-@TableName(value = "post")
+@TableName(value ="question_bank")
 @Data
-public class Post implements Serializable {
-
+public class QuestionBank implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -30,29 +27,24 @@ public class Post implements Serializable {
     private String title;
 
     /**
-     * 内容
+     * 描述
      */
-    private String content;
+    private String description;
 
     /**
-     * 标签列表 json
+     * 图片
      */
-    private String tags;
-
-    /**
-     * 点赞数
-     */
-    private Integer thumbNum;
-
-    /**
-     * 收藏数
-     */
-    private Integer favourNum;
+    private String picture;
 
     /**
      * 创建用户 id
      */
     private Long userId;
+
+    /**
+     * 编辑时间
+     */
+    private Date editTime;
 
     /**
      * 创建时间
@@ -67,7 +59,6 @@ public class Post implements Serializable {
     /**
      * 是否删除
      */
-    @TableLogic
     private Integer isDelete;
 
     @TableField(exist = false)

@@ -1,6 +1,7 @@
 package com.xuyuan.mianshiyuan.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xuyuan.mianshiyuan.model.entity.User;
 import com.xuyuan.mianshiyuan.model.vo.LoginUserVO;
 import com.xuyuan.mianshiyuan.annotation.AuthCheck;
 import com.xuyuan.mianshiyuan.common.BaseResponse;
@@ -17,15 +18,14 @@ import com.xuyuan.mianshiyuan.model.dto.user.UserQueryRequest;
 import com.xuyuan.mianshiyuan.model.dto.user.UserRegisterRequest;
 import com.xuyuan.mianshiyuan.model.dto.user.UserUpdateMyRequest;
 import com.xuyuan.mianshiyuan.model.dto.user.UserUpdateRequest;
-import com.xuyuan.mianshiyuan.model.entity.User;
 import com.xuyuan.mianshiyuan.model.vo.UserVO;
-import com.xuyuan.mianshiyuan.service.UserService;
 
 import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.xuyuan.mianshiyuan.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
@@ -45,8 +45,7 @@ import static com.xuyuan.mianshiyuan.service.impl.UserServiceImpl.SALT;
 /**
  * 用户接口
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
+ * @author <a href="https://github.com/xuyuan-upward">许苑向上</a>
  */
 @RestController
 @RequestMapping("/user")

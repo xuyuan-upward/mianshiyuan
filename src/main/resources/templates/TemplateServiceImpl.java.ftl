@@ -34,8 +34,7 @@ import java.util.stream.Collectors;
 /**
  * ${dataName}服务实现
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ * @author <a href="https://github.com/xuyuan-upward">许苑向上</a>
  */
 @Service
 @Slf4j
