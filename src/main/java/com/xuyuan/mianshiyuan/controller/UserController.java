@@ -1,6 +1,8 @@
 package com.xuyuan.mianshiyuan.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xuyuan.mianshiyuan.model.dto.question.QuestionQueryRequest;
+import com.xuyuan.mianshiyuan.model.entity.Question;
 import com.xuyuan.mianshiyuan.model.entity.User;
 import com.xuyuan.mianshiyuan.model.vo.LoginUserVO;
 import com.xuyuan.mianshiyuan.annotation.AuthCheck;
@@ -18,6 +20,7 @@ import com.xuyuan.mianshiyuan.model.dto.user.UserQueryRequest;
 import com.xuyuan.mianshiyuan.model.dto.user.UserRegisterRequest;
 import com.xuyuan.mianshiyuan.model.dto.user.UserUpdateMyRequest;
 import com.xuyuan.mianshiyuan.model.dto.user.UserUpdateRequest;
+import com.xuyuan.mianshiyuan.model.vo.QuestionVO;
 import com.xuyuan.mianshiyuan.model.vo.UserVO;
 
 import java.util.List;
@@ -25,6 +28,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.xuyuan.mianshiyuan.service.QuestionService;
 import com.xuyuan.mianshiyuan.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
@@ -57,6 +61,9 @@ public class UserController {
 
     @Resource
     private WxOpenConfig wxOpenConfig;
+
+    @Resource
+    private QuestionService questionService;
 
     // region 登录相关
 
@@ -100,6 +107,35 @@ public class UserController {
         }
         LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
         return ResultUtils.success(loginUserVO);
+    }
+
+
+    /**
+     * 添加用户签到记录
+     *
+     * @param request
+     * @return 当前是否已签到成功
+     */
+    @PostMapping("/add/sign_in")
+    public BaseResponse<Boolean> addUserSignIn(HttpServletRequest request) {
+        // 必须要登录才能签到
+        User loginUser = userService.getLoginUser(request);
+        boolean result = userService.addUserSignIn(loginUser.getId());
+        return ResultUtils.success(result);
+    }
+    /**
+     * 获取用户签到记录
+     *
+     * @param year    年份（为空表示当前年份）
+     * @param request
+     * @return 签到记录映射
+     */
+    @GetMapping("/get/sign_in")
+    public BaseResponse<List<Integer>> getUserSignInRecord(Integer year, HttpServletRequest request) {
+        // 必须要登录才能获取
+        User loginUser = userService.getLoginUser(request);
+        List<Integer> userSignInRecord = userService.getUserSignInRecord(loginUser.getId(), year);
+        return ResultUtils.success(userSignInRecord);
     }
 
     /**
@@ -316,4 +352,6 @@ public class UserController {
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
+
+
 }

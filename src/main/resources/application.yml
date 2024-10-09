@@ -42,6 +42,14 @@ spring:
     multipart:
       # 大小限制
       max-file-size: 10MB
+  redis:
+    port: 6379
+    host: localhost
+    connect-timeout: 5000
+
+# es搜索
+  elasticsearch:
+    uris: http://localhost:9200
 server:
   address: 0.0.0.0
   port: 8101

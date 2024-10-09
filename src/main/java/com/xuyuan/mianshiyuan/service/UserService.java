@@ -125,6 +125,8 @@ public interface UserService extends IService<User> {
      */
     boolean addUserSignIn(long userId);
 
+
+
     /**
      * 获取用户某个年份的签到记录
      *

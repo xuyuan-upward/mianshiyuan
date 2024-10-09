@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xuyuan.mianshiyuan.common.ErrorCode;
 import com.xuyuan.mianshiyuan.constant.CommonConstant;
+import com.xuyuan.mianshiyuan.constant.RedisConstant;
 import com.xuyuan.mianshiyuan.exception.BusinessException;
 import com.xuyuan.mianshiyuan.model.dto.user.UserQueryRequest;
 import com.xuyuan.mianshiyuan.model.entity.User;
@@ -17,13 +18,19 @@ import com.xuyuan.mianshiyuan.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.Redisson;
+import org.redisson.api.RBitSet;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +56,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 盐值，混淆密码
      */
-    public static final String SALT = "yupi";
+    public static final String SALT = "xuyuan";
+
+    @Resource
+    private RedissonClient redissonClient;
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -286,18 +296,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public boolean addUserSignIn(long userId) {
-//        LocalDate date = LocalDate.now();
-//        String key = RedisConstant.getUserSignInRedisKey(date.getYear(), userId);
-//        // 获取 Redis 的 BitMap
-//        RBitSet signInBitSet = redissonClient.getBitSet(key);
-//        // 获取当前日期是一年中的第几天，作为偏移量（从 1 开始计数）
-//        int offset = date.getDayOfYear();
-//        // 查询当天有没有签到
-//        if (!signInBitSet.get(offset)) {
-//            // 如果当前未签到，则设置
-//            signInBitSet.set(offset, true);
-//        }
-        // 当天已签到
+        LocalDate date = LocalDate.now();
+        String key = RedisConstant.getUserSignInRedisKey(date.getYear(), userId);
+        // 获取 Redis 的 BitMap
+        RBitSet signInBitSet = redissonClient.getBitSet(key);
+        // 获取当前日期是一年中的第几天，作为偏移量（从 1 开始计数）
+        int offset = date.getDayOfYear();
+        // 查询当天有没有签到
+        if (!signInBitSet.get(offset)) {
+            // 如果当前未签到，则设置
+            signInBitSet.set(offset, true);
+        }
         return true;
     }
 
@@ -310,26 +319,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public List<Integer> getUserSignInRecord(long userId, Integer year) {
-//        if (year == null) {
-//            LocalDate date = LocalDate.now();
-//            year = date.getYear();
-//        }
-//        String key = RedisConstant.getUserSignInRedisKey(year, userId);
-//        // 获取 Redis 的 BitMap
-//        RBitSet signInBitSet = redissonClient.getBitSet(key);
-//        // 加载 BitSet 到内存中，避免后续读取时发送多次请求
-//        BitSet bitSet = signInBitSet.asBitSet();
-//        // 统计签到的日期
-//        List<Integer> dayList = new ArrayList<>();
-//        // 从索引 0 开始查找下一个被设置为 1 的位
-//        int index = bitSet.nextSetBit(0);
-//        while (index >= 0) {
-//            dayList.add(index);
-//            // 继续查找下一个被设置为 1 的位
-//            index = bitSet.nextSetBit(index + 1);
-//        }
-//        return dayList;
-        return null;
+        // 没有输入查询，则表示查询当前年份
+        if (year == null) {
+            LocalDate date = LocalDate.now();
+            year = date.getYear();
+        }
+        String key = RedisConstant.getUserSignInRedisKey(year, userId);
+        // 获取 Redis 的 BitMap
+        RBitSet signInBitSet = redissonClient.getBitSet(key);
+        // 加载 BitSet 到Java内存中，避免后续读取时发送多次请求
+        BitSet bitSet = signInBitSet.asBitSet();
+        // 统计签到的日期
+        List<Integer> dayList = new ArrayList<>();
+        // 从索引 0 开始查找下一个被设置为 1 的位
+        int index = bitSet.nextSetBit(0);
+        while (index >= 0) {
+            dayList.add(index);
+            // 继续查找下一个被设置为 1 的位
+            index = bitSet.nextSetBit(index + 1);
+        }
+        return dayList;
     }
 }
 

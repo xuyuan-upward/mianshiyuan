@@ -213,6 +213,7 @@ public class QuestionController {
     @PostMapping("/edit")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest, HttpServletRequest request) {
+
         if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -235,6 +236,12 @@ public class QuestionController {
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
-
+    @PostMapping("/search/page/vo")
+    public BaseResponse<Page<QuestionVO>> searchUserByPage(@RequestBody QuestionQueryRequest questionQueryRequest, HttpServletRequest request){
+        int pageSize = questionQueryRequest.getPageSize();
+        ThrowUtils.throwIf(pageSize > 200, ErrorCode.PARAMS_ERROR);
+        Page<Question> questionPage = questionService.searchFromEs(questionQueryRequest);
+        return ResultUtils.success(questionService.getQuestionVOPage(questionPage,request));
+    }
     // endregion
 }
