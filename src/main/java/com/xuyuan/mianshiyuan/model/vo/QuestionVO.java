@@ -99,7 +99,7 @@ public class QuestionVO implements Serializable {
         QuestionVO questionVO = new QuestionVO();
         BeanUtils.copyProperties(question, questionVO);
         // question中的tags存放到数据是json数组
-        questionVO.setTagList(JSONUtil.toList(question.getTags(), String.class));
+        questionVO.setTagList(JSONUtil.toList(JSONUtil.parseArray(question.getTags()), String.class));
         return questionVO;
     }
 }

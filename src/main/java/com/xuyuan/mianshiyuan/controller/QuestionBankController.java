@@ -1,6 +1,8 @@
 package com.xuyuan.mianshiyuan.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
+import com.jd.platform.hotkey.client.core.key.IKeyCollector;
 import com.xuyuan.mianshiyuan.annotation.AuthCheck;
 import com.xuyuan.mianshiyuan.common.BaseResponse;
 import com.xuyuan.mianshiyuan.common.DeleteRequest;
@@ -137,8 +139,24 @@ public class QuestionBankController {
         // 查询数据库
         QuestionBank questionBank = questionBankService.getById(id);
         ThrowUtils.throwIf(questionBank == null, ErrorCode.NOT_FOUND_ERROR);
+        String key = "bank_detail_" + id;
+
+        // 如果是热点key
+        if (JdHotKeyStore.isHotKey(key)) {
+            // 从本地缓存中获取缓存值
+            Object cacheQuestionBankVO = JdHotKeyStore.get(key);
+            if (cacheQuestionBankVO != null) {
+                return ResultUtils.success((QuestionBankVO) cacheQuestionBankVO);
+            }
+        }
+
+        // 查询数据库
+        QuestionBankVO questionBankVO = questionBankService.getQuestionBankVO(questionBank, request);
+        // 设置本地缓存 如果是热点key了才会设置对应的缓存 否则不做任何处理
+        JdHotKeyStore.smartSet(key, questionBankVO);
+
         // 获取封装类
-        return ResultUtils.success(questionBankService.getQuestionBankVO(questionBank, request));
+        return ResultUtils.success(questionBankVO);
     }
 
     /**
