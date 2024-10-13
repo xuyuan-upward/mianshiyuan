@@ -1,5 +1,11 @@
 package com.xuyuan.mianshiyuan.controller;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
 import com.jd.platform.hotkey.client.core.key.IKeyCollector;
@@ -15,10 +21,12 @@ import com.xuyuan.mianshiyuan.model.dto.questionBank.QuestionBankAddRequest;
 import com.xuyuan.mianshiyuan.model.dto.questionBank.QuestionBankEditRequest;
 import com.xuyuan.mianshiyuan.model.dto.questionBank.QuestionBankQueryRequest;
 import com.xuyuan.mianshiyuan.model.dto.questionBank.QuestionBankUpdateRequest;
+import com.xuyuan.mianshiyuan.model.entity.Question;
 import com.xuyuan.mianshiyuan.model.entity.QuestionBank;
 import com.xuyuan.mianshiyuan.model.entity.User;
 import com.xuyuan.mianshiyuan.model.vo.QuestionBankVO;
 import com.xuyuan.mianshiyuan.service.QuestionBankService;
+import com.xuyuan.mianshiyuan.service.QuestionService;
 import com.xuyuan.mianshiyuan.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +47,7 @@ public class QuestionBankController {
 
     @Resource
     private QuestionBankService questionBankService;
+
 
     @Resource
     private UserService userService;
@@ -184,6 +193,13 @@ public class QuestionBankController {
      * @return
      */
     @PostMapping("/list/page/vo")
+    // 实现注解定义资源（方式有：1. 注解 2.代码 3.引入框架适配）
+    // 如果 blockHandler 和 fallbackHandler 同时配置，
+    // 当熔断器打开后，仍然会进入 blockHandler 进行处理，因此需要在该方法中处理因为熔断触发的降级逻辑：
+    @SentinelResource(value = "listQuestionBankVOByPage",
+            blockHandler = "handleBlockException",
+    fallback = "handleFallback"
+    )
     public BaseResponse<Page<QuestionBankVO>> listQuestionBankVOByPage(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
                                                                HttpServletRequest request) {
         long current = questionBankQueryRequest.getCurrent();
@@ -195,6 +211,32 @@ public class QuestionBankController {
                 questionBankService.getQueryWrapper(questionBankQueryRequest));
         // 获取封装类
         return ResultUtils.success(questionBankService.getQuestionBankVOPage(questionBankPage, request));
+    }
+
+
+
+    // listQuestionBankVOByPage 触发熔断操作：直接返回本地数据     降级操作
+    // // blockHandler 和 fallbackHandler 同时配置，当熔断器打开后，
+    // 仍然会进入 blockHandler(限流) 进行处理HttpServletRequest request, BlockException ex)
+    // 方法，因此需要在该方法中处理因为熔断触发的降级逻辑：
+    public BaseResponse<Page<QuestionBankVO>> handleFallback(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
+                                                             HttpServletRequest request, Throwable ex) {
+
+        return ResultUtils.success(null);
+    }
+
+    /**
+     * listQuestionBankVOByPage 流控操作
+     * 限流：提示“系统压力过大，请耐心等待”
+     */
+    public BaseResponse<Page<QuestionBankVO>> handleBlockException(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
+                                                                   HttpServletRequest request, BlockException ex) {
+        // 降级操作
+        if (ex instanceof DegradeException) {
+            return handleFallback(questionBankQueryRequest, request, ex);
+        }
+        // 限流操作
+        return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "系统压力过大，请耐心等待");
     }
 
     /**
