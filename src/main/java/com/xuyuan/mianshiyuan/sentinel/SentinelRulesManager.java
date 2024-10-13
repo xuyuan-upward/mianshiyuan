@@ -32,7 +32,7 @@ public class SentinelRulesManager {
         initFlowRules();
         // 初始化降级规则
         initDegradeRules();
-        // 持久化配置为本地文件
+        // 持久化配置为本地文件,重启项目时候会重新加载规则配置而不会丢失
         listenRules();
     }
 
