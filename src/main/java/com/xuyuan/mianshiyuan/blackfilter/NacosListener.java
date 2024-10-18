@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,7 +29,6 @@ public class NacosListener implements InitializingBean {
 
     @Value("${nacos.config.group}")
     private String group;
-
     /**
      * 单次执行逻辑 与@PostConstruct功能类似
      * @throws Exception

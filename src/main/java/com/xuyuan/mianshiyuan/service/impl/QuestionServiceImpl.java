@@ -13,7 +13,6 @@ import com.xuyuan.mianshiyuan.mapper.QuestionMapper;
 import com.xuyuan.mianshiyuan.model.dto.question.QuestionEsDTO;
 import com.xuyuan.mianshiyuan.model.dto.question.QuestionQueryRequest;
 import com.xuyuan.mianshiyuan.model.entity.Question;
-
 import com.xuyuan.mianshiyuan.model.entity.QuestionBankQuestion;
 import com.xuyuan.mianshiyuan.model.entity.User;
 import com.xuyuan.mianshiyuan.model.vo.QuestionVO;
@@ -59,6 +58,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+
 
     /**
      * 校验数据

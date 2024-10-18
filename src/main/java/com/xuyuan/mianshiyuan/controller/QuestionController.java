@@ -6,11 +6,10 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
-import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
+import com.alibaba.nacos.api.config.annotation.NacosValue;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xuyuan.mianshiyuan.annotation.AuthCheck;
 import com.xuyuan.mianshiyuan.common.BaseResponse;
 import com.xuyuan.mianshiyuan.common.DeleteRequest;
 import com.xuyuan.mianshiyuan.common.ErrorCode;
@@ -23,10 +22,8 @@ import com.xuyuan.mianshiyuan.model.dto.question.QuestionAddRequest;
 import com.xuyuan.mianshiyuan.model.dto.question.QuestionEditRequest;
 import com.xuyuan.mianshiyuan.model.dto.question.QuestionQueryRequest;
 import com.xuyuan.mianshiyuan.model.dto.question.QuestionUpdateRequest;
-import com.xuyuan.mianshiyuan.model.dto.questionBank.QuestionBankQueryRequest;
 import com.xuyuan.mianshiyuan.model.entity.Question;
 import com.xuyuan.mianshiyuan.model.entity.User;
-import com.xuyuan.mianshiyuan.model.vo.QuestionBankVO;
 import com.xuyuan.mianshiyuan.model.vo.QuestionVO;
 import com.xuyuan.mianshiyuan.service.QuestionService;
 import com.xuyuan.mianshiyuan.service.UserService;
@@ -54,6 +51,12 @@ public class QuestionController {
     @Resource
     private UserService userService;
 
+    // 使用动态配置 -> 只能springboot使用 springcloud使用@Value
+    @NacosValue(value = "${warn.count:10}", autoRefreshed = true)
+    private Integer warnCount;
+
+    @NacosValue(value = "${ban.count:20}", autoRefreshed = true)
+    private Integer banCount;
     // region 增删改查
 
     /**
@@ -151,7 +154,7 @@ public class QuestionController {
         User loginUser = userService.getLoginUser(request);
         crawlerDetect(loginUser.getId());
         // 查询数据库
-        Question question = questionService.getById(id);
+        Question question = questionService.getById(String.valueOf(id));
         ThrowUtils.throwIf(question == null, ErrorCode.NOT_FOUND_ERROR);
         // 获取封装类
         return ResultUtils.success(questionService.getQuestionVO(question, request));
@@ -168,9 +171,9 @@ public class QuestionController {
      */
     private void crawlerDetect(long loginUserId) {
         // 调用多少次时告警
-        final int WARN_COUNT = 10;
+         int WARN_COUNT = warnCount;
         // 超过多少次封号
-        final int BAN_COUNT = 20;
+         int BAN_COUNT = banCount;
         // 拼接访问 key
         String key = String.format("user:access:%s", loginUserId);
         // 一分钟内访问次数，180 秒过期
