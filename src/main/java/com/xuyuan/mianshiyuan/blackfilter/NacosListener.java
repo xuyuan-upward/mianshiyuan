@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 /**
- * bean加载完毕单次执行逻辑
+ * bean加载完毕单次执行逻辑 nacos监听器动态配置
  */
 public class NacosListener implements InitializingBean {
 

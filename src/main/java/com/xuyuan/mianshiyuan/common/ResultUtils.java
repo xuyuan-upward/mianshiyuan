@@ -42,7 +42,7 @@ public class ResultUtils {
     /**
      * 失败
      *
-     * @param errorCode
+     * @param errorCode 只需要两个参数即可，一个状态码和信息
      * @return
      */
     public static BaseResponse error(ErrorCode errorCode, String message) {

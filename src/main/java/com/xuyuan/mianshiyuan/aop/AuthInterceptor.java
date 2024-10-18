@@ -22,8 +22,9 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author <a href="https://github.com/xuyuan-upward">许苑向上</a>
  */
-@Aspect
-@Component
+//@Aspect
+//@Component
+    // 取消自定义注解拦截
 public class AuthInterceptor {
 
     @Resource
