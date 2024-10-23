@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 
 /**
  * 题库接口
@@ -150,7 +151,6 @@ public class QuestionBankController {
         QuestionBank questionBank = questionBankService.getById(id);
         ThrowUtils.throwIf(questionBank == null, ErrorCode.NOT_FOUND_ERROR);
         String key = "bank_detail_" + id;
-
         // 如果是热点key
         if (JdHotKeyStore.isHotKey(key)) {
             // 从本地缓存中获取缓存值
@@ -159,7 +159,6 @@ public class QuestionBankController {
                 return ResultUtils.success((QuestionBankVO) cacheQuestionBankVO);
             }
         }
-
         // 查询数据库
         QuestionBankVO questionBankVO = questionBankService.getQuestionBankVO(questionBank, request);
         // 设置本地缓存 如果是热点key了才会设置对应的缓存 否则不做任何处理
@@ -198,7 +197,7 @@ public class QuestionBankController {
     // 如果 blockHandler 和 fallbackHandler 同时配置，
     // 当熔断器打开后，仍然会进入 blockHandler 进行处理，因此需要在该方法中处理因为熔断触发的降级逻辑：
     @SentinelResource(value = "listQuestionBankVOByPage",
-            blockHandler = "handleBlockException",
+            blockHandler = "handleBlockHandler",
     fallback = "handleFallback"
     )
     public BaseResponse<Page<QuestionBankVO>> listQuestionBankVOByPage(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
@@ -230,7 +229,7 @@ public class QuestionBankController {
      * listQuestionBankVOByPage 流控操作
      * 限流：提示“系统压力过大，请耐心等待”
      */
-    public BaseResponse<Page<QuestionBankVO>> handleBlockException(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
+    public BaseResponse<Page<QuestionBankVO>> handleBlockHandler(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
                                                                    HttpServletRequest request, BlockException ex) {
         // 降级操作
         if (ex instanceof DegradeException) {

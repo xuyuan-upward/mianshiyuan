@@ -18,6 +18,7 @@ import com.xuyuan.mianshiyuan.constant.UserConstant;
 import com.xuyuan.mianshiyuan.exception.BusinessException;
 import com.xuyuan.mianshiyuan.exception.ThrowUtils;
 import com.xuyuan.mianshiyuan.manager.CounterManager;
+import com.xuyuan.mianshiyuan.manager.RequestRateLimiter;
 import com.xuyuan.mianshiyuan.model.dto.question.QuestionAddRequest;
 import com.xuyuan.mianshiyuan.model.dto.question.QuestionEditRequest;
 import com.xuyuan.mianshiyuan.model.dto.question.QuestionQueryRequest;
@@ -28,9 +29,10 @@ import com.xuyuan.mianshiyuan.model.vo.QuestionVO;
 import com.xuyuan.mianshiyuan.service.QuestionService;
 import com.xuyuan.mianshiyuan.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Result;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
-
+import com.xuyuan.mianshiyuan.manager.doCounterManager;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +52,6 @@ public class QuestionController {
 
     @Resource
     private UserService userService;
-
     // 使用动态配置 -> 只能springboot使用 springcloud使用@Value
     @NacosValue(value = "${warn.count:10}", autoRefreshed = true)
     private Integer warnCount;
@@ -164,6 +165,9 @@ public class QuestionController {
     @Resource
     private CounterManager counterManager;
 
+//    @Resource
+//    private RequestRateLimiter requestRateLimiter;
+
     /**
      * 检测爬虫
      *
@@ -176,8 +180,12 @@ public class QuestionController {
          int BAN_COUNT = banCount;
         // 拼接访问 key
         String key = String.format("user:access:%s", loginUserId);
-        // 一分钟内访问次数，180 秒过期
-        long count = counterManager.incrAndGetCounter(key, 1, TimeUnit.MINUTES, 180);
+        // 使用策略模式进行多种计数器方式选择
+        doCounterManager doCounterManager = new doCounterManager(counterManager);
+        int count = doCounterManager.doCounter(String.valueOf(loginUserId), 1, TimeUnit.MINUTES, 180);
+        // 先进行5s本地计数然后再推送到redis进行计数  // 一分钟内访问次数，180 秒过期
+        // 获取的是1s前的访问次数
+//        long count = counterManager.incrAndGetCounter(key, 1, TimeUnit.MINUTES, 180);
         // 是否封号
         if (count > BAN_COUNT) {
             // 踢下线
@@ -190,7 +198,7 @@ public class QuestionController {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "访问太频繁，已被封号");
         }
         // 是否告警
-        if (count == WARN_COUNT) {
+        if (count >= WARN_COUNT) {
             // 可以改为向管理员发送邮件通知
             throw new BusinessException(110, "警告访问太频繁");
         }
@@ -282,7 +290,7 @@ public class QuestionController {
         Entry entry = null;
         // 基于IP的限流
         try {
-            // 创建资源保护入口
+            // 创建资源保护入口 即为定义资源
             entry = SphU.entry("listQuestionVOByPage", EntryType.IN, 1, remoteAddr);
             // 被保护的业务逻辑
             // 查询数据库

@@ -18,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @MapperScan("com.xuyuan.mianshiyuan.mapper")
 @EnableScheduling
-// 开启拦截器扫描
+// 开启拦截器扫描将其注册自定义拦截器
 @ServletComponentScan
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 public class MainApplication {

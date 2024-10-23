@@ -315,6 +315,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         LocalDate date = LocalDate.now();
         String key = RedisConstant.getUserSignInRedisKey(date.getYear(), userId);
         // 获取 Redis 的 BitMap
+        // RBisSet是Redisson库中的一种数据类型，它对应Redis中的位图
         RBitSet signInBitSet = redissonClient.getBitSet(key);
         // 获取当前日期是一年中的第几天，作为偏移量（从 1 开始计数）
         int offset = date.getDayOfYear();

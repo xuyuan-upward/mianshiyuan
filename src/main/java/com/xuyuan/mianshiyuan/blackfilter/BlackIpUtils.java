@@ -32,7 +32,7 @@ public class BlackIpUtils {
         // 加锁防止并发  todo 有点类似懒汉式
         synchronized (BlackIpUtils.class) {
             if (CollectionUtil.isNotEmpty(blackIpList)) {
-                // 注意构造参数的设置
+                // 注意构造参数的设置 hutool自带工具
                 BitMapBloomFilter bitMapBloomFilter = new BitMapBloomFilter(958506);
                 for (String ip : blackIpList) {
                     bitMapBloomFilter.add(ip);

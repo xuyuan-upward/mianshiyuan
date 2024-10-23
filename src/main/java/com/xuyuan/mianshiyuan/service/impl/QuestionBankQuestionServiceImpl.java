@@ -82,6 +82,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         LambdaQueryWrapper<Question> questionLambdaQueryWrapper =  Wrappers.lambdaQuery(Question.class)
                 .select(Question::getId)
                 .in(Question::getId, questionIdList);
+        // 只需要收集题目Id
         List<Long> exitQuestionIdList = questionService.listObjs(questionLambdaQueryWrapper,obj -> (Long) obj);
         ThrowUtils.throwIf(CollUtil.isEmpty(exitQuestionIdList), ErrorCode.PARAMS_ERROR, "合法的题目 id 列表为空");
         // 检查对应的题目id是否存在于题库中
@@ -127,6 +128,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
 
             // 异步处理每批数据，将任务添加到异步任务列表
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                // 每次批量1000条只进行一次数据库连接
                 questionBankQuestionService.batchAddQuestionsToBankInner(questionBankQuestions);
             }, customExecutor);
             futures.add(future);

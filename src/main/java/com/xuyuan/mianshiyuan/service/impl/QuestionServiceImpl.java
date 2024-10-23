@@ -251,7 +251,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
     public Page<Question> listQuestionByPage(QuestionQueryRequest questionQueryRequest) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
-        // 题目表的查询条件
+        // 题目表的查询条件 可以根据题目请求封装类进行条件获取
         QueryWrapper<Question> queryWrapper = this.getQueryWrapper(questionQueryRequest);
         // 根据题库查询题目列表接口
         Long questionBankId = questionQueryRequest.getQuestionBankId();
